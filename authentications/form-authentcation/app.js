@@ -1,41 +1,82 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import config from './config/env.js';
+import connectDB from './config/database.js';
+import authRoutes from './routes/authRoutes.js';
+import { errorHandler, notFound } from './middlewares/errorHandler.js';
+import { rateLimiter } from './middlewares/rateLimiter.js';
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+// Initialize Express app
+const app = express();
 
-var app = express();
+// Connect to MongoDB
+connectDB();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://ntcogk.org', 'https://www.ntcogk.org'] 
+    : ['http://localhost:3000', 'http://localhost:3001'],
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Middleware
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(morgan('dev'));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// Rate limiting
+app.use('/api', rateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 100,
+}));
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'NTCOG Kenya Authentication API is running',
+    timestamp: new Date().toISOString(),
+    environment: config.server.nodeEnv,
+  });
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// API routes
+app.use('/api/auth', authRoutes);
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+// 404 handler
+app.use(notFound);
+
+// Global error handler
+app.use(errorHandler);
+
+// Start server
+const PORT = config.server.port;
+
+app.listen(PORT, () => {
+  console.log('='.repeat(50));
+  console.log(`✓ Server running on port ${PORT}`);
+  console.log(`✓ Environment: ${config.server.nodeEnv}`);
+  console.log(`✓ API URL: http://localhost:${PORT}/api/auth`);
+  console.log(`✓ Health Check: http://localhost:${PORT}/health`);
+  console.log('='.repeat(50));
 });
 
-module.exports = app;
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Promise Rejection:', err);
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+export default app;
