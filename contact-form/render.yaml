@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: ntcogk-contact-form-api
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENV
+        value: production
+      - key: PORT
+        value: 5500
+      - key: APP_NAME
+        value: NTCOGK Contact Form API
+      - key: MONGO_URI
+        sync: false
+      - key: EMAIL_HOST
+        sync: false
+      - key: EMAIL_PORT
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: RATE_LIMIT_WINDOW
+        value: 15
+      - key: RATE_LIMIT_MAX
+        value: 100
+      - key: CORS_ORIGIN
+        sync: false
+    healthCheckPath: /health

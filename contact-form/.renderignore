@@ -1,0 +1,33 @@
+# Files to ignore during Render deployment
+
+# Development files
+.env.example
+.env.local
+.env.*.local
+README.md
+DEPLOYMENT.md
+
+# Documentation
+docs/
+
+# Tests
+tests/
+test/
+*.test.js
+*.spec.js
+
+# Development dependencies
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
