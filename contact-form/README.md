@@ -101,25 +101,78 @@ To use Gmail for sending emails:
 - `PATCH /api/contact/:id/status` - Update contact status
 - `DELETE /api/contact/:id` - Delete contact
 
-## Deployment on Render
+## Deployment on Vercel
 
-### Option 1: Using render.yaml (Recommended)
+### Option 1: Using Vercel CLI (Recommended)
+
+1. **Install Vercel CLI**
+   ```bash
+   npm install -g vercel
+   ```
+
+2. **Login to Vercel**
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy from project directory**
+   ```bash
+   cd New-Testament-Backend/contact-form
+   vercel
+   ```
+
+4. **Follow the prompts**
+   - Set up and deploy: Yes
+   - Which scope: Select your account
+   - Link to existing project: No
+   - Project name: ntcogk-contact-form-api
+   - Directory: ./
+   - Override settings: No
+
+5. **Add Environment Variables**
+   ```bash
+   vercel env add MONGO_URI
+   vercel env add EMAIL_HOST
+   vercel env add EMAIL_PORT
+   vercel env add EMAIL_USER
+   vercel env add EMAIL_PASS
+   vercel env add ADMIN_EMAIL
+   vercel env add JWT_SECRET
+   vercel env add JWT_EXPIRES_IN
+   vercel env add RATE_LIMIT_WINDOW
+   vercel env add RATE_LIMIT_MAX
+   vercel env add CORS_ORIGIN
+   ```
+
+6. **Deploy to production**
+   ```bash
+   vercel --prod
+   ```
+
+### Option 2: Using Vercel Dashboard
 
 1. **Push your code to GitHub**
    ```bash
    git add .
-   git commit -m "Prepare for Render deployment"
+   git commit -m "Prepare for Vercel deployment"
    git push origin main
    ```
 
-2. **Create a new Web Service on Render**
-   - Go to [Render Dashboard](https://dashboard.render.com/)
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository
-   - Render will automatically detect `render.yaml`
+2. **Import Project on Vercel**
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New..." → "Project"
+   - Import your GitHub repository
+   - Select the repository
 
-3. **Configure Environment Variables**
-   Add these in Render dashboard (Settings → Environment):
+3. **Configure Project**
+   - **Framework Preset**: Other
+   - **Root Directory**: `New-Testament-Backend/contact-form`
+   - **Build Command**: Leave empty (not needed)
+   - **Output Directory**: Leave empty
+   - **Install Command**: `npm install`
+
+4. **Add Environment Variables**
+   Click "Environment Variables" and add:
    - `MONGO_URI` - Your MongoDB connection string
    - `EMAIL_HOST` - smtp.gmail.com
    - `EMAIL_PORT` - 587
@@ -127,45 +180,29 @@ To use Gmail for sending emails:
    - `EMAIL_PASS` - Your Gmail app password
    - `ADMIN_EMAIL` - Email to receive notifications
    - `JWT_SECRET` - Generate a secure random string
+   - `JWT_EXPIRES_IN` - 7d
+   - `RATE_LIMIT_WINDOW` - 15
+   - `RATE_LIMIT_MAX` - 100
    - `CORS_ORIGIN` - Your frontend URL (e.g., https://yourdomain.com)
 
-4. **Deploy**
-   - Click "Create Web Service"
-   - Render will build and deploy automatically
-
-### Option 2: Manual Configuration
-
-1. **Create new Web Service on Render**
-   - Go to Render Dashboard
-   - Click "New +" → "Web Service"
-   - Connect your repository
-
-2. **Configure Build Settings**
-   - **Name**: ntcogk-contact-form-api
-   - **Region**: Oregon (or your preferred region)
-   - **Branch**: main
-   - **Root Directory**: New-Testament-Backend/contact-form
-   - **Runtime**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-
-3. **Add Environment Variables** (same as Option 1)
-
-4. **Deploy**
+5. **Deploy**
+   - Click "Deploy"
+   - Vercel will build and deploy automatically
 
 ### Post-Deployment
 
 1. **Test your deployment**
    ```bash
-   curl https://your-app.onrender.com/health
+   curl https://your-app.vercel.app/health
    ```
 
 2. **Update frontend API URL**
    - Update `NEXT_PUBLIC_CONTACT_API_URL` in your frontend `.env`
-   - Set it to your Render URL: `https://your-app.onrender.com/api/contact`
+   - Set it to your Vercel URL: `https://your-app.vercel.app/api/contact`
 
 3. **Monitor logs**
-   - Check Render dashboard for logs and errors
+   - Check Vercel dashboard for logs and errors
+   - Use `vercel logs` command for CLI access
 
 ## Production Checklist
 
@@ -176,7 +213,8 @@ To use Gmail for sending emails:
 - [ ] Use Gmail App Password (not regular password)
 - [ ] Test all endpoints after deployment
 - [ ] Monitor error logs regularly
-- [ ] Set up health check monitoring
+- [ ] Configure custom domain (optional)
+- [ ] Set up Vercel Analytics (optional)
 
 ## Rate Limiting
 
@@ -215,6 +253,26 @@ The API includes rate limiting to prevent abuse:
 ### CORS errors
 - Add your frontend URL to CORS_ORIGIN
 - Use comma-separated values for multiple origins
+
+### Vercel-specific issues
+- Serverless functions have 10s timeout on Hobby plan
+- Use Vercel Pro for longer timeouts (60s)
+- Check function logs in Vercel dashboard
+
+## Vercel Features
+
+### Custom Domain
+1. Go to Project Settings → Domains
+2. Add your custom domain
+3. Configure DNS records as instructed
+
+### Environment Variables
+- Production, Preview, and Development environments
+- Update via dashboard or CLI: `vercel env add`
+
+### Analytics
+- Enable Vercel Analytics in project settings
+- Monitor API performance and usage
 
 ## Support
 

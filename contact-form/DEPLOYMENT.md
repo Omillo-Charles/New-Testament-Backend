@@ -1,4 +1,4 @@
-# Render Deployment Guide - Contact Form API
+# Vercel Deployment Guide - Contact Form API
 
 ## Quick Start Deployment
 
@@ -9,39 +9,36 @@
    cd New-Testament-Backend/contact-form
    git status
    git add .
-   git commit -m "Prepare contact-form API for Render deployment"
+   git commit -m "Prepare contact-form API for Vercel deployment"
    git push origin main
    ```
 
-### Step 2: Create Render Account
+### Step 2: Create Vercel Account
 
-1. Go to [Render.com](https://render.com)
+1. Go to [Vercel.com](https://vercel.com)
 2. Sign up or log in with GitHub
-3. Authorize Render to access your repositories
+3. Authorize Vercel to access your repositories
 
-### Step 3: Create New Web Service
+### Step 3: Import Project
 
-1. **From Render Dashboard**
-   - Click "New +" button
-   - Select "Web Service"
+1. **From Vercel Dashboard**
+   - Click "Add New..." button
+   - Select "Project"
 
-2. **Connect Repository**
+2. **Import Repository**
    - Find and select your repository
-   - Click "Connect"
+   - Click "Import"
 
-3. **Configure Service**
-   - **Name**: `ntcogk-contact-form-api`
-   - **Region**: Oregon (or closest to your users)
-   - **Branch**: `main`
+3. **Configure Project**
+   - **Framework Preset**: Other
    - **Root Directory**: `New-Testament-Backend/contact-form`
-   - **Runtime**: Node
-   - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-   - **Plan**: Free (or select paid plan)
+   - **Build Command**: Leave empty
+   - **Output Directory**: Leave empty
+   - **Install Command**: `npm install`
 
 ### Step 4: Add Environment Variables
 
-Click "Advanced" → "Add Environment Variable" and add these:
+Click "Environment Variables" section and add these:
 
 #### Required Variables
 
@@ -85,15 +82,15 @@ CORS_ORIGIN=http://localhost:3000,https://your-frontend-domain.com
 
 ### Step 5: Deploy
 
-1. Click "Create Web Service"
-2. Wait for deployment to complete (5-10 minutes)
-3. Render will provide a URL like: `https://ntcogk-contact-form-api.onrender.com`
+1. Click "Deploy"
+2. Wait for deployment to complete (2-5 minutes)
+3. Vercel will provide a URL like: `https://ntcogk-contact-form-api.vercel.app`
 
 ### Step 6: Test Deployment
 
 1. **Health Check**
    ```bash
-   curl https://your-app.onrender.com/health
+   curl https://your-app.vercel.app/health
    ```
    
    Expected response:
@@ -108,12 +105,12 @@ CORS_ORIGIN=http://localhost:3000,https://your-frontend-domain.com
 
 2. **API Root**
    ```bash
-   curl https://your-app.onrender.com/
+   curl https://your-app.vercel.app/
    ```
 
 3. **Test Contact Form** (using Postman or curl)
    ```bash
-   curl -X POST https://your-app.onrender.com/api/contact \
+   curl -X POST https://your-app.vercel.app/api/contact \
      -H "Content-Type: application/json" \
      -d '{
        "name": "Test User",
@@ -128,18 +125,19 @@ CORS_ORIGIN=http://localhost:3000,https://your-frontend-domain.com
 Update your frontend environment variables:
 
 ```env
-NEXT_PUBLIC_CONTACT_API_URL=https://your-app.onrender.com/api/contact
+NEXT_PUBLIC_CONTACT_API_URL=https://your-app.vercel.app/api/contact
 ```
 
 Then redeploy your frontend.
 
 ## Important Notes
 
-### Free Tier Limitations
+### Vercel Hobby Plan Limitations
 
-- **Spin Down**: Free services spin down after 15 minutes of inactivity
-- **Spin Up**: First request after spin down takes 30-60 seconds
-- **Solution**: Upgrade to paid plan ($7/month) for always-on service
+- **Serverless Functions**: 10-second execution timeout
+- **Bandwidth**: 100GB per month
+- **Invocations**: Unlimited
+- **Solution**: Upgrade to Pro plan ($20/month) for 60s timeout and more features
 
 ### MongoDB Atlas Setup
 
@@ -169,29 +167,52 @@ Update `CORS_ORIGIN` with your actual frontend URLs:
 
 ### View Logs
 
-1. Go to Render Dashboard
-2. Select your service
-3. Click "Logs" tab
-4. Monitor for errors or issues
+**Via Dashboard:**
+1. Go to Vercel Dashboard
+2. Select your project
+3. Click "Deployments" → Select deployment
+4. Click "Functions" tab to see logs
+
+**Via CLI:**
+```bash
+vercel logs
+vercel logs --follow  # Real-time logs
+```
 
 ### Update Environment Variables
 
-1. Go to service settings
-2. Click "Environment" tab
+**Via Dashboard:**
+1. Go to project settings
+2. Click "Environment Variables"
 3. Update variables
-4. Service will automatically redeploy
+4. Redeploy for changes to take effect
+
+**Via CLI:**
+```bash
+vercel env add VARIABLE_NAME
+vercel env rm VARIABLE_NAME
+vercel env ls
+```
 
 ### Manual Redeploy
 
-1. Go to service dashboard
-2. Click "Manual Deploy" → "Deploy latest commit"
+**Via Dashboard:**
+1. Go to Deployments tab
+2. Click "..." on latest deployment
+3. Click "Redeploy"
+
+**Via CLI:**
+```bash
+vercel --prod
+```
 
 ### Health Monitoring
 
 Set up external monitoring (optional):
 - [UptimeRobot](https://uptimerobot.com) - Free monitoring
 - [Pingdom](https://www.pingdom.com) - Paid monitoring
-- Monitor endpoint: `https://your-app.onrender.com/health`
+- Vercel Analytics - Built-in monitoring
+- Monitor endpoint: `https://your-app.vercel.app/health`
 
 ## Troubleshooting
 
@@ -256,26 +277,33 @@ CORS_ORIGIN=https://your-frontend.com,http://localhost:3000
 ## Rollback
 
 If deployment fails:
-1. Go to Render Dashboard
-2. Select your service
-3. Click "Events" tab
+1. Go to Vercel Dashboard
+2. Select your project
+3. Click "Deployments" tab
 4. Find previous successful deployment
-5. Click "Rollback to this version"
+5. Click "..." → "Promote to Production"
+
+**Via CLI:**
+```bash
+vercel rollback
+```
 
 ## Scaling
 
 ### Upgrade Plan
 
 For production use, consider upgrading:
-- **Starter Plan** ($7/month): Always-on, no spin down
-- **Standard Plan** ($25/month): More resources, faster performance
+- **Hobby Plan** (Free): 10s timeout, 100GB bandwidth
+- **Pro Plan** ($20/month): 60s timeout, 1TB bandwidth, advanced features
+- **Enterprise**: Custom pricing, dedicated support
 
 ### Performance Optimization
 
-1. **Enable HTTP/2**: Automatic on Render
-2. **Add Redis**: For caching (separate service)
+1. **Edge Functions**: Deploy closer to users (Pro plan)
+2. **Caching**: Use Vercel's edge caching
 3. **Database Indexing**: Optimize MongoDB queries
-4. **CDN**: Use for static assets
+4. **CDN**: Automatic on Vercel
+5. **Serverless Optimization**: Keep functions lightweight
 
 ## Security Checklist
 
@@ -289,9 +317,10 @@ For production use, consider upgrading:
 
 ## Support
 
-- **Render Docs**: https://render.com/docs
-- **Render Community**: https://community.render.com
+- **Vercel Docs**: https://vercel.com/docs
+- **Vercel Community**: https://github.com/vercel/vercel/discussions
 - **MongoDB Atlas**: https://www.mongodb.com/docs/atlas
+- **Vercel CLI Docs**: https://vercel.com/docs/cli
 
 ## Next Steps
 

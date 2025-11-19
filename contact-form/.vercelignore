@@ -1,9 +1,12 @@
-# Files to ignore during Render deployment
+# Files to ignore during Vercel deployment
+
+# Environment files
+.env
+.env.local
+.env.*.local
 
 # Development files
 .env.example
-.env.local
-.env.*.local
 README.md
 DEPLOYMENT.md
 
@@ -31,3 +34,6 @@ Thumbs.db
 # Git
 .git/
 .gitignore
+
+# Node modules (Vercel installs fresh)
+node_modules/
