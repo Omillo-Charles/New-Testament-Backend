@@ -222,10 +222,93 @@ export const logout = async (req, res) => {
   }
 };
 
+// Get admin statistics
+export const getAdminStats = async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin' && req.user.role !== 'super-admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Admin privileges required.',
+      });
+    }
+
+    // Get user statistics from social auth
+    const totalUsers = await User.countDocuments();
+    const verifiedUsers = await User.countDocuments({ isEmailVerified: true });
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const adminUsers = await User.countDocuments({ role: { $in: ['admin', 'super-admin'] } });
+    const googleUsers = await User.countDocuments({ provider: 'google' });
+    
+    // Get users by church
+    const usersByChurch = await User.aggregate([
+      { $match: { church: { $exists: true, $ne: null, $ne: '' } } },
+      { $group: { _id: '$church', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Get recent registrations (last 7 days)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentRegistrations = await User.countDocuments({
+      createdAt: { $gte: sevenDaysAgo }
+    });
+
+    // Try to get stats from form authentication
+    let formAuthStats = {
+      totalUsers: 0,
+      verifiedUsers: 0,
+      activeUsers: 0,
+      adminUsers: 0,
+      recentRegistrations: 0,
+    };
+
+    try {
+      const { default: FormUser } = await import('../../form-authentcation/models/User.js');
+      formAuthStats.totalUsers = await FormUser.countDocuments();
+      formAuthStats.verifiedUsers = await FormUser.countDocuments({ isEmailVerified: true });
+      formAuthStats.activeUsers = await FormUser.countDocuments({ isActive: true });
+      formAuthStats.adminUsers = await FormUser.countDocuments({ role: { $in: ['admin', 'super-admin'] } });
+      formAuthStats.recentRegistrations = await FormUser.countDocuments({
+        createdAt: { $gte: sevenDaysAgo }
+      });
+    } catch (error) {
+      console.log('Form authentication database not available:', error.message);
+    }
+
+    // Combine stats
+    const combinedStats = {
+      totalUsers: totalUsers + formAuthStats.totalUsers,
+      verifiedUsers: verifiedUsers + formAuthStats.verifiedUsers,
+      activeUsers: activeUsers + formAuthStats.activeUsers,
+      adminUsers: adminUsers + formAuthStats.adminUsers,
+      recentRegistrations: recentRegistrations + formAuthStats.recentRegistrations,
+      socialAuthUsers: totalUsers,
+      formAuthUsers: formAuthStats.totalUsers,
+      googleUsers,
+      usersByChurch,
+    };
+
+    res.status(200).json({
+      success: true,
+      data: combinedStats,
+    });
+
+  } catch (error) {
+    console.error('Get admin stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get statistics',
+      error: error.message,
+    });
+  }
+};
+
 export default {
   googleCallback,
   getProfile,
   updateProfile,
   refreshToken,
   logout,
+  getAdminStats,
 };

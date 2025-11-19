@@ -6,6 +6,7 @@ import {
   updateProfile,
   refreshToken,
   logout,
+  getAdminStats,
 } from '../controllers/authController.js';
 import { verifyToken } from '../middlewares/auth.js';
 
@@ -35,5 +36,8 @@ router.post('/refresh-token', refreshToken);
 router.get('/profile', verifyToken, getProfile);
 router.put('/profile', verifyToken, updateProfile);
 router.post('/logout', verifyToken, logout);
+
+// Admin routes
+router.get('/admin/stats', verifyToken, getAdminStats);
 
 export default router;

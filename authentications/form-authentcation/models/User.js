@@ -2,15 +2,9 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
-  // Personal Information (from register form)
+  // Personal Information
   firstName: {
     type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
     trim: true,
   },
   email: {
@@ -21,12 +15,9 @@ const userSchema = new mongoose.Schema({
     trim: true,
     match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
   },
-  phone: {
-    type: String,
-    trim: true,
-  },
   church: {
     type: String,
+    required: [true, 'Church is required'],
     trim: true,
   },
   
@@ -36,12 +27,6 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [8, 'Password must be at least 8 characters'],
     select: false, // Don't return password by default
-  },
-  
-  // Preferences
-  newsletter: {
-    type: Boolean,
-    default: false,
   },
   
   // Role & Status
@@ -83,7 +68,7 @@ const userSchema = new mongoose.Schema({
 
 // Virtual for full name
 userSchema.virtual('fullName').get(function () {
-  return `${this.firstName} ${this.lastName}`;
+  return this.firstName || this.email.split('@')[0];
 });
 
 // Hash password before saving

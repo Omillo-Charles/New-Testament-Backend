@@ -29,18 +29,34 @@ if (config.google.clientID && config.google.clientSecret) {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
+          const email = profile.emails[0].value;
+          
+          // Admin emails list
+          const adminEmails = [
+            'info@ntcogk.org',
+            'fidelomillo812@gmail.com',
+            'officialomillocharles@gmail.com',
+            'fidelomillo1@gmail.com'
+          ];
+          
+          // Determine role based on email
+          const role = adminEmails.includes(email.toLowerCase()) ? 'admin' : 'user';
+          
           // Check if user already exists
           let user = await User.findOne({ googleId: profile.id });
 
           if (user) {
-            // Update last login
+            // Update last login and role if needed
             user.lastLogin = new Date();
+            if (adminEmails.includes(user.email.toLowerCase()) && user.role !== 'admin') {
+              user.role = 'admin';
+            }
             await user.save();
             return done(null, user);
           }
 
           // Check if email already exists
-          user = await User.findOne({ email: profile.emails[0].value });
+          user = await User.findOne({ email });
 
           if (user) {
             // Link Google account to existing user
@@ -48,6 +64,9 @@ if (config.google.clientID && config.google.clientSecret) {
             user.provider = 'google';
             user.isEmailVerified = true;
             user.lastLogin = new Date();
+            if (adminEmails.includes(user.email.toLowerCase()) && user.role !== 'admin') {
+              user.role = 'admin';
+            }
             if (!user.profilePicture && profile.photos && profile.photos.length > 0) {
               user.profilePicture = profile.photos[0].value;
             }
@@ -58,11 +77,12 @@ if (config.google.clientID && config.google.clientSecret) {
           // Create new user
           user = await User.create({
             googleId: profile.id,
-            email: profile.emails[0].value,
+            email,
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             profilePicture: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
             provider: 'google',
+            role,
             isEmailVerified: true,
             lastLogin: new Date(),
           });

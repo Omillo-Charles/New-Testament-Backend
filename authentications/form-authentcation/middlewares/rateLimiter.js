@@ -48,7 +48,7 @@ export const rateLimiter = (options = {}) => {
 // Stricter rate limiter for authentication endpoints
 export const authRateLimiter = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 5, // max 5 login/register attempts per 15 minutes
+  maxRequests: 10, // max 10 login/register attempts per 15 minutes
   message: 'Too many authentication attempts. Please try again later.',
 });
 

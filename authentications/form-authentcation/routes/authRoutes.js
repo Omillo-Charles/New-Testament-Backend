@@ -10,6 +10,8 @@ import {
   requestPasswordReset,
   resetPassword,
   verifyEmail,
+  resendOTP,
+  getAdminStats,
 } from '../controllers/authController.js';
 import {
   validateRegister,
@@ -60,7 +62,9 @@ router.post(
   resetPassword
 );
 
-router.get('/verify-email/:token', verifyEmail);
+router.post('/verify-email', sanitizeInput, verifyEmail);
+
+router.post('/resend-otp', sanitizeInput, resendOTP);
 
 // Protected routes (require authentication)
 router.post('/logout', verifyToken, logout);
@@ -70,5 +74,8 @@ router.get('/profile', verifyToken, getProfile);
 router.put('/profile', verifyToken, sanitizeInput, updateProfile);
 
 router.post('/change-password', verifyToken, sanitizeInput, changePassword);
+
+// Admin routes
+router.get('/admin/stats', verifyToken, getAdminStats);
 
 export default router;

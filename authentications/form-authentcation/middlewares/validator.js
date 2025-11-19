@@ -1,17 +1,9 @@
 // Validate registration data
 export const validateRegister = (req, res, next) => {
-  const { firstName, lastName, email, password, confirmPassword } = req.body;
+  const { email, password, church } = req.body;
   const errors = [];
 
   // Required fields
-  if (!firstName || firstName.trim().length === 0) {
-    errors.push('First name is required');
-  }
-
-  if (!lastName || lastName.trim().length === 0) {
-    errors.push('Last name is required');
-  }
-
   if (!email || !isValidEmail(email)) {
     errors.push('Valid email address is required');
   }
@@ -22,17 +14,8 @@ export const validateRegister = (req, res, next) => {
     errors.push('Password must be at least 8 characters long');
   }
 
-  if (password !== confirmPassword) {
-    errors.push('Passwords do not match');
-  }
-
-  // Length validations
-  if (firstName && firstName.length > 50) {
-    errors.push('First name must not exceed 50 characters');
-  }
-
-  if (lastName && lastName.length > 50) {
-    errors.push('Last name must not exceed 50 characters');
+  if (!church || church.trim().length === 0) {
+    errors.push('Church is required');
   }
 
   if (errors.length > 0) {
